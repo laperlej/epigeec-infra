@@ -55,22 +55,17 @@
     - role: usegalaxy_ca.service_account
       become: false
     - role: dj-wasabi.telegraf
-
   post_tasks:
     - name: fetch edugain idps the first time
       command: "bash {{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
       become: true
       become_user: pgalaxy
-      tags:
-        - setup
     - name: set cron jobs
       ansible.builtin.cron:
         name: "cron jobs to adjust allocations group for canadian users"
         minute: "*/5"
         user: pgalaxy
         job: "bash {{ galaxy_root }}/server/cron/set_new_users_allocation_groups.bash"
-      tags:
-        - setup
 
 - hosts: datasetservers
   become: true
@@ -81,19 +76,6 @@
     - group_vars/galaxyservers.yml
   roles:
     - role: usegalaxy_ca.volume
-      tags:
-        - volume
-        - nfs
-        - setup
     - role: usegalaxy_ca.nfs_server
-      tags:
-        - nfs
-        - setup
     - role: dj-wasabi.telegraf
-      tags:
-        - setup
-        - monitor
     - role: usegalaxy_ca.backup_tsm
-      tags:
-        - setup
-        - backup
