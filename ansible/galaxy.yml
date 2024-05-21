@@ -4,8 +4,6 @@
   become_user: root
   vars_files:
     - group_vars/secret.yml
-    - group_vars/slurm.yml
-    - group_vars/cvmfsclient.yml
     - group_vars/terraform.yml
   pre_tasks:
     - name: install dependencies
@@ -23,59 +21,37 @@
       tags:
         - always
   roles:
-    - role: usegalaxy_ca.volume
-    - role: usegalaxy_ca.postgresql
-    - role: galaxyproject.postgresql
-    - role: usegalaxy_ca.restart_postgres
-    - role: galaxyproject.postgresql_objects
-      become: true
-      become_user: postgres
-    - role: usegalaxy_ca.gxadmin
-    - role: galaxyproject.gxadmin
-    - role: dj-wasabi.telegraf
-    - role: usegalaxy_ca.backup_pg
-    - role: usegalaxy_ca.backup_tsm
-    - role: usegalaxy_ca.nfs_client
-    - role: usegalaxy_ca.slurm
-    - role: galaxyproject.repos
-    - role: galaxyproject.slurm
-    - role: usegalaxy_eu.apptainer
-    - role: galaxyproject.tusd
-    - role: galaxyproject.galaxy
-    - role: galaxyproject.miniconda
-      become: true
-      become_user: "{{ galaxy_user_name }}"
-    - role: usegalaxy_ca.maintenance
     - role: galaxyproject.nginx
-    - role: laperlej.cvmfs
-    - role: usegalaxy_ca.drmaa
-    - role: usegalaxy_ca.restart_galaxy
-      become: true
-      become_user: root
-    - role: usegalaxy_ca.service_account
-      become: false
-    - role: dj-wasabi.telegraf
-  post_tasks:
-    - name: fetch edugain idps the first time
-      command: "bash {{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
-      become: true
-      become_user: pgalaxy
-    - name: set cron jobs
-      ansible.builtin.cron:
-        name: "cron jobs to adjust allocations group for canadian users"
-        minute: "*/5"
-        user: pgalaxy
-        job: "bash {{ galaxy_root }}/server/cron/set_new_users_allocation_groups.bash"
+  #   - role: epigeec.volume
+  #   - role: epigeec.postgresql
+  #   - role: galaxyproject.postgresql
+  #   - role: epigeec.restart_postgres
+  #   - role: galaxyproject.postgresql_objects
+  #     become: true
+  #     become_user: postgres
+  #   - role: epigeec.gxadmin
+  #   - role: galaxyproject.gxadmin
+  #   - role: epigeec.backup_pg
+  #   - role: galaxyproject.repos
+  #   - role: galaxyproject.galaxy
+  #   - role: galaxyproject.miniconda
+  #     become: true
+  #     become_user: "{{ galaxy_user_name }}"
+  #   - role: epigeec.maintenance
+  #   - role: epigeec.restart_galaxy
+  #     become: true
+  #     become_user: root
+  #   - role: epigeec.service_account
+  #     become: false
+  #   - role: dj-wasabi.telegraf
+  # post_tasks:
+  #   - name: fetch edugain idps the first time
+  #     command: "bash {{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
+  #     become: true
+  #     become_user: pgalaxy
 
 - hosts: datasetservers
   become: true
   become_user: root
-  vars_files:
-    - group_vars/secret.yml
-    - group_vars/terraform.yml
-    - group_vars/galaxyservers.yml
   roles:
-    - role: usegalaxy_ca.volume
-    - role: usegalaxy_ca.nfs_server
-    - role: dj-wasabi.telegraf
-    - role: usegalaxy_ca.backup_tsm
+    - role: epigeec.dataset
