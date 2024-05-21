@@ -29,15 +29,16 @@ class Ansible:
     """
     def _build_command(self) -> list[str]:
         command = "doppler run -- .venv/bin/ansible-playbook".split()
-        tags = ["--tags", ",".join(self.tags)]
-        command += tags + [self.yaml]
+        if self.tags:
+            command += ["--tags", ",".join(self.tags)]
+        command += [self.yaml]
         return command
 
     """
     Build an ansible requirements command
     """
     def requirements(self) -> None:
-        command = "doppler run -- .venv/bin/ansible-galaxy install -p roles -r requirements.yml".split()
+        command = str("doppler run -- .venv/bin/ansible-galaxy install -p roles -r requirements.yml").split()
         env = {"ANSIBLE_FORCE_COLOR": "true"}
         self.runner.run_cmd(command, env=env)
 
