@@ -1,0 +1,19 @@
+###############################################
+# This file is managed by Terraform. Do not edit.
+###############################################
+
+
+[datasetservers]
+
+epigeec-usegal-dataset
+
+
+[galaxyservers]
+
+epigeec-usegal-galaxy
+
+
+
+[all:vars]
+ansible_port = 22
+ansible_user = laperlej

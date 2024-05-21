@@ -1,0 +1,276 @@
+# Galaxy
+galaxy_create_user: false # False by default, as e.g. you might have a 'galaxy' user provided by LDAP or AD.
+galaxy_separate_privileges: true # Best practices for security, configuration is owned by 'root' (or a different user) than the processes
+galaxy_manage_paths: false # False by default as your administrator might e.g. have root_squash enabled on NFS. Here we can create the directories so it's fine.
+
+galaxy_privsep_user: pgalaxy
+galaxy_config_perms: 0664
+galaxy_layout: root-dir
+galaxy_root: /mnt/nfs/galaxy
+galaxy_server_dir: "{{ galaxy_root }}/server"
+galaxy_venv_dir: "{{ galaxy_root }}/venv"
+galaxy_config_dir: "{{ galaxy_root }}/config"
+galaxy_mutable_data_dir: "{{ galaxy_root }}/var"
+galaxy_mutable_config_dir: "{{ galaxy_mutable_data_dir }}/config"
+galaxy_cache_dir: "{{ galaxy_mutable_data_dir }}/cache"
+galaxy_local_tools_dir: "{{ galaxy_root }}/local_tools"
+galaxy_shed_tools_dir: "{{ galaxy_mutable_data_dir }}/shed_tools"
+
+nginx_srv: /srv/nginx
+tpv_mutable_dir: /mnt/nfs/galaxy/var/total_perspective_vortex
+tpv_config_dir: /mnt/nfs/galaxy/config/TPV_DO_NOT_TOUCH
+galaxy_extra_privsep_dirs:
+  - "{{ tpv_mutable_dir }}"
+tpv_privsep: true
+
+galaxy_commit_id: release_23.2
+galaxy_force_checkout: true
+miniconda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"
+miniconda_version: 23.7.1
+miniconda_channels: ["conda-forge", "defaults"]
+
+# Galaxy Job Configuration
+galaxy_job_config:
+  runners:
+    local_runner:
+      load: galaxy.jobs.runners.local:LocalJobRunner
+      workers: 16
+    slurm:
+      load: galaxy.jobs.runners.slurm:SlurmJobRunner
+      drmaa_library_path: /usr/lib/slurm-drmaa/lib/libdrmaa.so.1
+  handling:
+    assign: ["db-skip-locked"]
+  execution:
+    default: tpv_dispatcher
+    environments:
+      local_env:
+        runner: local_runner
+        tmp_dir: true
+      tpv_dispatcher:
+        runner: dynamic
+        type: python
+        function: map_tool_to_destination
+        rules_module: tpv.rules
+        tpv_config_files:
+          - https://raw.githubusercontent.com/galaxyproject/tpv-shared-database/main/tools.yml
+          - "{{ tpv_mutable_dir }}/tpv_rules_local.yml"
+  tools:
+    - class: local # these special tools that aren't parameterized for remote execution - expression tools, upload, etc
+      environment: local_env
+
+SENTRY_DSN_URL: "http://{{ GALAXY_SENTRY_DSN }}@{{ groups['monitorservers'][0] }}:9000/2"
+
+galaxy_config:
+  galaxy:
+    admin_users:
+      - Jonathan.Laperle@USherbrooke.ca
+      - Carol.Gauthier@USherbrooke.ca
+      - service@admin.com
+    database_connection: "postgresql://{{ galaxy_user_name }}:{{ galaxy_postgres_password }}@{{ groups['dbservers'][0] }}:5432/{{ galaxy_db_name }}"
+    file_path: /mnt/nfs/data/datasets
+    job_working_directory: /mnt/nfs/data/jobs
+    # file_path: /data/datasets
+    # job_working_directory: /data/jobs
+    object_store_store_by: uuid
+    id_secret: "{{ vault_id_secret }}"
+    job_config: "{{ galaxy_job_config }}" # Use the variable we defined above
+    # SQL Performance
+    slow_query_log_threshold: 5
+    enable_per_request_sql_debugging: true
+    # File serving Performance
+    nginx_x_accel_redirect_base: /_x_accel_redirect
+    # Automation / Ease of Use / User-facing features
+    watch_job_rules: "auto"
+    allow_path_paste: true
+    enable_quotas: true
+    allow_user_deletion: true
+    expose_user_name: true
+    expose_dataset_path: true
+    expose_potentially_sensitive_job_metrics: true
+    # HTML sanitation
+    sanitize_all_html: false
+    # NFS workarounds
+    retry_job_output_collection: 3
+    # Debugging
+    cleanup_job: onsuccess
+    allow_user_impersonation: true
+    # Tool security
+    outputs_to_working_directory: true
+    new_user_dataset_access_role_default_private: true # Make datasets private by default
+
+    # Users login (CILogon OIDC and No login/password)
+    show_welcome_with_login: false
+    allow_user_creation: false
+    require_login: true
+    session_duration: 40000
+    use_remote_user: false
+    auth_config_file: "{{ galaxy_config_dir }}/auth_conf.xml"
+    enable_oidc: true
+    oidc_config_file: "{{ galaxy_config_dir }}/oidc_config.xml"
+    oidc_backends_config_file: "{{ galaxy_config_dir }}/oidc_backends_config.xml"
+    oidc_auto_redirect: false
+    # TUS
+    galaxy_infrastructure_url: "https://{{ usegalaxy_domain }}"
+    tus_upload_store: "{{ galaxy_tus_upload_store }}"
+    # CVMFS
+    tool_data_table_config_path: /cvmfs/data.galaxyproject.org/byhand/location/tool_data_table_conf.xml,/cvmfs/data.galaxyproject.org/managed/location/tool_data_table_conf.xml
+    # Tool Dependencies
+    dependency_resolvers_config_file: "{{ galaxy_config_dir }}/dependency_resolvers_conf.xml"
+    containers_resolvers_config_file: "{{ galaxy_config_dir }}/container_resolvers_conf.yml"
+    # Monitoring
+    statsd_host: localhost
+    statsd_includb: true
+    sentry_dsn: "{{ SENTRY_DSN_URL if GALAXY_SENTRY_DSN | length > 0 else '' }}"
+    sentry_traces_sample_rate: 1.0
+
+  gravity:
+    process_manager: systemd
+    galaxy_root: "{{ galaxy_root }}/server"
+    galaxy_user: "{{ galaxy_user_name }}"
+    virtualenv: "{{ galaxy_venv_dir }}"
+    gunicorn:
+      # listening options
+      # bind: "unix:{{ galaxy_mutable_config_dir }}/gunicorn.sock"
+      bind: "unix:{{ galaxy_root }}/gunicorn.sock"
+      # performance options
+      workers: 2
+      # Other options that will be passed to gunicorn
+      # This permits setting of 'secure' headers like REMOTE_USER (and friends)
+      # https://docs.gunicorn.org/en/stable/settings.html#forwarded-allow-ips
+      extra_args: '--forwarded-allow-ips="*"'
+      # This lets Gunicorn start Galaxy completely before forking which is faster.
+      # https://docs.gunicorn.org/en/stable/settings.html#preload-app
+      preload: true
+    celery:
+      concurrency: 2
+      loglevel: DEBUG
+    tusd:
+      enable: true
+      tusd_path: /usr/local/sbin/tusd
+      upload_dir: "{{ galaxy_tus_upload_store }}"
+    handlers:
+      handler:
+        processes: 2
+        pools:
+          - job-handlers
+          - workflow-schedulers
+
+galaxy_local_tools:
+  - testing.xml
+
+galaxy_job_config_file: "{{ galaxy_config_dir }}/galaxy.yml"
+
+galaxy_config_templates:
+  - src: templates/galaxy/config/auth_conf.xml.j2
+    dest: "{{ galaxy_config.galaxy.auth_config_file }}"
+  - src: templates/galaxy/config/oidc_config.xml.j2
+    dest: "{{ galaxy_config.galaxy.oidc_config_file }}"
+  - src: templates/galaxy/config/oidc_backends_config.xml.j2
+    dest: "{{ galaxy_config.galaxy.oidc_backends_config_file }}"
+  # Apptainer
+  - src: templates/galaxy/config/container_resolvers_conf.yml.j2
+    dest: "{{ galaxy_config.galaxy.containers_resolvers_config_file }}"
+  - src: templates/galaxy/config/dependency_resolvers_conf.xml
+    dest: "{{ galaxy_config.galaxy.dependency_resolvers_config_file }}"
+  # cron scripts
+  - src: templates/galaxy/cron_scripts/set_new_users_allocation_groups.py.j2
+    dest: "{{ galaxy_root }}/server/cron/set_new_users_allocation_groups.py"
+  - src: templates/galaxy/cron_scripts/set_new_users_allocation_groups.bash.j2
+    dest: "{{ galaxy_root }}/server/cron/set_new_users_allocation_groups.bash"
+  - src: templates/galaxy/cron_scripts/fetch-edugain-idps.bash.j2
+    dest: "{{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
+
+galaxy_config_files:
+  - src: files/galaxy/config/tpv_rules_local.yml
+    dest: "{{ tpv_mutable_dir }}/tpv_rules_local.yml"
+
+# Certbot
+certbot_auto_renew_hour: "{{ 23 |random(seed=inventory_hostname)  }}"
+certbot_auto_renew_minute: "{{ 59 |random(seed=inventory_hostname)  }}"
+certbot_auth_method: --webroot
+certbot_install_method: virtualenv
+certbot_auto_renew: yes
+certbot_auto_renew_user: root
+certbot_environment: production
+certbot_well_known_root: /srv/nginx/_well-known_root
+certbot_share_key_users:
+  - www-data
+certbot_post_renewal: |
+  systemctl restart nginx || true
+certbot_domains:
+  - "{{ usegalaxy_domain }}"
+certbot_agree_tos: --agree-tos
+
+# NGINX
+nginx_selinux_allow_local_connections: true
+nginx_servers:
+  - redirect-ssl
+nginx_ssl_servers:
+  - galaxy
+  - sentry
+nginx_enable_default_server: false
+nginx_conf_http:
+  client_max_body_size: 1g
+  # gzip: "on" # This is enabled by default in Ubuntu, and the duplicate directive will cause a crash.
+  gzip_proxied: "any"
+  gzip_static: "on" # The ngx_http_gzip_static_module module allows sending precompressed files with the ".gz" filename extension instead of regular files.
+  gzip_vary: "on"
+  gzip_min_length: 128
+  gzip_comp_level: 6 # Tradeoff of better compression for slightly more CPU time.
+  gzip_types: |
+    text/plain
+    text/css
+    text/xml
+    text/javascript
+    application/javascript
+    application/x-javascript
+    application/json
+    application/xml
+    application/xml+rss
+    application/xhtml+xml
+    application/x-font-ttf
+    application/x-font-opentype
+    image/png
+    image/svg+xml
+    image/x-icon
+nginx_ssl_role: usegalaxy_eu.certbot
+nginx_conf_ssl_certificate: /etc/ssl/certs/fullchain.pem
+nginx_conf_ssl_certificate_key: /etc/ssl/user/privkey-www-data.pem
+
+# TUS
+tusd_version: v1.13.0
+galaxy_tusd_host: localhost
+galaxy_tusd_port: 1080
+galaxy_tus_upload_store: /mnt/nfs/data/tus
+
+#NFS
+nfs_host: "{{ groups['nfsservers'][0] }}"
+nfs_host_folder: /mnt/volume
+nfs_mnt_folder: /mnt/nfs
+
+# Telegraf
+telegraf_plugins_extra:
+  listen_galaxy_routes:
+    plugin: "statsd"
+    config:
+      - service_address = ":8125"
+      - metric_separator = "."
+      - allowed_pending_messages = 10000
+
+#Users
+galaxy_user:
+  name: "{{ galaxy_user_name }}"
+  uid: 2001
+  shell: /bin/bash
+galaxy_group:
+  name: "{{ galaxy_user_name }}"
+  gid: 2001
+pgalaxy_user:
+  name: priv
+  gid: 2002
+nginx_user:
+  name: www-data
+  uid: 33
+nginx_group:
+  name: www-data
+  gid: 33

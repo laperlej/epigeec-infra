@@ -1,0 +1,27 @@
+epigeec:
+  instances:
+    galaxyservers:
+      - name: galaxy
+        volume_size: 500
+        volume_type: volumes-ec
+        flavor: c16-120gb
+        security_groups: [usegal, web, ssh]
+    datasetservers:
+      - name: dataset
+        volume_size: 100
+        volume_type: volumes-ec
+        flavor: p4-7.5gb
+        security_groups: [usegal]
+  volumes:
+    galaxy:
+      - name: epigeec-computed
+        type: volumes-ec
+        fstype: ext4
+        size: 2000
+      - name: epigeec-db
+        type: volumes-ec
+        fstype: ext4
+        size: 500
+  floating_ips:
+    - ip: 198.168.186.178
+      attach_to: galaxy

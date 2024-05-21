@@ -1,0 +1,15 @@
+###############################################
+# This file is managed by Terraform. Do not edit.
+###############################################
+
+slurm_nodes:
+%{ for group_name, hosts in nodes ~}
+%{ if group_name == "slurmexecservers" ~}
+%{ for host in hosts ~}
+  - name: ${host.name}
+    CPUs: ${host.cpu}
+    RealMemory: ${host.mem}
+    Weight: ${host.mem}
+%{ endfor ~}
+%{ endif ~}
+%{ endfor ~}

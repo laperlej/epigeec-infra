@@ -1,0 +1,55 @@
+roles:
+  # Galaxy
+  - src: galaxyproject.galaxy
+    version: 0.10.14
+  - src: galaxyproject.miniconda
+    version: 0.3.1
+  #Postgres
+  - src: galaxyproject.postgresql
+    version: 1.1.2
+  - src: galaxyproject.postgresql_objects
+    version: 1.2.0
+  #NGINX
+  - src: galaxyproject.nginx
+    version: 0.7.1
+  - src: usegalaxy_eu.certbot
+    version: 0.1.11
+  #CVMFS
+  - name: laperlej.cvmfs
+    src: ssh://git@github.com/laperlej/ansible-cvmfs.git
+    version: main
+    scm: git
+  # - src: galaxyproject.cvmfs
+  #   version: 0.2.21
+  # TUS (uploads)
+  - name: galaxyproject.tusd
+    version: 0.0.1
+  # Singularity/Apptainer
+  - src: usegalaxy_eu.apptainer
+    version: 0.0.1
+  # SLURM
+  - src: galaxyproject.repos
+    version: 0.0.3
+  - src: galaxyproject.slurm
+    version: 1.0.2
+  # GxAdmin
+  - src: galaxyproject.gxadmin
+    version: 0.0.12
+  # InfluxDB
+  - src: usegalaxy_eu.influxdb
+    version: v6.0.7
+  # Monitoring
+  - name: dj-wasabi.telegraf
+    src: https://github.com/dj-wasabi/ansible-telegraf
+    version: 6f6fdf7f5ead491560783d52528b79e9e088bd5b
+  # Grafana
+  - src: cloudalchemy.grafana
+    version: 0.14.2
+  # Sentry
+  - name: mvdbeek.sentry_selfhosted
+    src: https://github.com/mvdbeek/ansible-role-sentry/archive/main.tar.gz
+
+collections:
+  # Ansible Posix
+  - name: ansible.posix
+    version: 1.5.2

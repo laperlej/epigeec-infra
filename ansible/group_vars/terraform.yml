@@ -1,0 +1,15 @@
+###############################################
+# This file is managed by Terraform. Do not edit.
+###############################################
+
+"volumes":
+  "epigeec-usegal-galaxy":
+  - "device": "/dev/vdc"
+    "fstype": "ext4"
+    "mount_point": "/mnt/volume"
+    "volume_name": "epigeec-computed"
+  - "device": "/dev/vdb"
+    "fstype": "ext4"
+    "mount_point": "/mnt/volume1"
+    "volume_name": "epigeec-db"
+
