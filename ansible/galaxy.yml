@@ -23,12 +23,12 @@
   roles:
     - role: galaxyproject.nginx
     - role: epigeec.volume
-  #   - role: epigeec.postgresql
-  #   - role: galaxyproject.postgresql
-  #   - role: epigeec.restart_postgres
-  #   - role: galaxyproject.postgresql_objects
-  #     become: true
-  #     become_user: postgres
+    - role: epigeec.postgresql
+    - role: galaxyproject.postgresql
+    - role: epigeec.restart_postgres
+    - role: galaxyproject.postgresql_objects
+      become: true
+      become_user: postgres
   #   - role: epigeec.gxadmin
   #   - role: galaxyproject.gxadmin
   #   - role: epigeec.backup_pg
