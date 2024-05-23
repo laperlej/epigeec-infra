@@ -29,26 +29,19 @@
     - role: galaxyproject.postgresql_objects
       become: true
       become_user: postgres
-  #   - role: epigeec.gxadmin
-  #   - role: galaxyproject.gxadmin
-  #   - role: epigeec.backup_pg
-  #   - role: galaxyproject.repos
-  #   - role: galaxyproject.galaxy
-  #   - role: galaxyproject.miniconda
-  #     become: true
-  #     become_user: "{{ galaxy_user_name }}"
-  #   - role: epigeec.maintenance
-  #   - role: epigeec.restart_galaxy
-  #     become: true
-  #     become_user: root
-  #   - role: epigeec.service_account
-  #     become: false
-  #   - role: dj-wasabi.telegraf
-  # post_tasks:
-  #   - name: fetch edugain idps the first time
-  #     command: "bash {{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
-  #     become: true
-  #     become_user: pgalaxy
+    #   - role: epigeec.gxadmin
+    #   - role: galaxyproject.gxadmin
+    #   - role: epigeec.backup_pg
+    - role: galaxyproject.repos
+    - role: galaxyproject.galaxy
+    - role: galaxyproject.miniconda
+      become: true
+      become_user: "{{ galaxy_user_name }}"
+    - role: epigeec.restart_galaxy
+      become: true
+      become_user: root
+    - role: epigeec.service_account
+      become: false
 
 - hosts: datasetservers
   become: true
