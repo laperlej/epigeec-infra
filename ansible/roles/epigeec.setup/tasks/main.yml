@@ -28,21 +28,10 @@
         uid: 2002
         groups: galaxy,sudo
 
-- name: Install NFS utils
-  apt:
-    name:
-      - nfs-kernel-server
-    state: present
-
-- name: Check the mnt folder exists
+- name: Check the galaxy folder exists
   file:
-    path: "{{ nfs_mnt_folder }}"
+    path: "/mnt/galaxy"
+    owner: galaxy
+    group: galaxy
+    mode: "0770"
     state: directory
-
-- name: Mount Volume
-  ansible.posix.mount:
-    path: "{{ nfs_mnt_folder }}"
-    src: "{{ nfs_host }}:{{ nfs_host_folder }}"
-    opts: rw,async,noatime,nodiratime
-    fstype: nfs
-    state: mounted
