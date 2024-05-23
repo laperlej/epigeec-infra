@@ -22,7 +22,7 @@
         - always
   roles:
     - role: galaxyproject.nginx
-  #   - role: epigeec.volume
+    - role: epigeec.volume
   #   - role: epigeec.postgresql
   #   - role: galaxyproject.postgresql
   #   - role: epigeec.restart_postgres
