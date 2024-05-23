@@ -54,4 +54,5 @@
   become: true
   become_user: root
   roles:
+    - role: epigeec.docker
     - role: epigeec.dataset
