@@ -11,7 +11,7 @@ epigeec:
         volume_size: 100
         volume_type: volumes-ec
         flavor: p4-7.5gb
-        security_groups: [usegal]
+        security_groups: [usegal, web]
   volumes:
     galaxy:
       - name: epigeec-computed
