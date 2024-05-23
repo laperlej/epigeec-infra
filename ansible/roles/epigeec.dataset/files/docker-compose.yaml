@@ -1,0 +1,11 @@
+version: "3.2"
+name: "geec_web"
+services:
+  client:
+    image: jlaperle/geec_web
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: "50m"

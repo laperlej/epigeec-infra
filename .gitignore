@@ -19,7 +19,7 @@ ansible/hosts
 .vault-password.txt
 
 **/roles/*
-!**/roles/usegalaxy_ca.*
+!**/roles/epigeec.*
 
 venv/
 .venv/
