@@ -5,13 +5,13 @@ epigeec:
         volume_size: 500
         volume_type: volumes-ec
         flavor: c16-120gb
-        security_groups: [usegal, web, ssh]
+        security_groups: [epigeec, web, ssh]
     datasetservers:
       - name: dataset
         volume_size: 100
         volume_type: volumes-ec
         flavor: p4-7.5gb
-        security_groups: [usegal, web]
+        security_groups: [epigeec]
   volumes:
     galaxy:
       - name: epigeec-computed
