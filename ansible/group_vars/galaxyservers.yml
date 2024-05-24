@@ -216,6 +216,7 @@ postgresql_objects_privileges:
     privs: SELECT
     objs: ALL_IN_SCHEMA
 postgresql_pg_hba_conf:
+  - host all all 127.0.0.1/32 md5
   - host all all {{ galaxy_subnet }} md5
 postgresql_conf:
   - listen_addresses: "'*'"
