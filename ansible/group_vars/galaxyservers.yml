@@ -1,7 +1,7 @@
 # Galaxy
 galaxy_create_user: false # False by default, as e.g. you might have a 'galaxy' user provided by LDAP or AD.
 galaxy_separate_privileges: true # Best practices for security, configuration is owned by 'root' (or a different user) than the processes
-galaxy_manage_paths: true # False by default as your administrator might e.g. have root_squash enabled on NFS. Here we can create the directories so it's fine.
+galaxy_manage_paths: false # False by default as your administrator might e.g. have root_squash enabled on NFS. Here we can create the directories so it's fine.
 
 galaxy_privsep_user: pgalaxy
 galaxy_config_perms: 0664
@@ -108,6 +108,9 @@ galaxy_config:
       # This lets Gunicorn start Galaxy completely before forking which is faster.
       # https://docs.gunicorn.org/en/stable/settings.html#preload-app
       preload: true
+    celery:
+      concurrency: 2
+      loglevel: DEBUG
     handlers:
       handler:
         processes: 2

@@ -28,10 +28,39 @@
         uid: 2002
         groups: galaxy,sudo
 
+    - name: Create Nginx group
+      group:
+        name: "{{ nginx_group.name }}"
+        gid: "{{ nginx_group.gid }}"
+      when: nginx_group is defined
+
+    - name: Create Nginx user
+      user:
+        name: "{{ nginx_user.name }}"
+        uid: "{{ nginx_user.uid }}"
+        group: "{{ nginx_group.name }}"
+      when: nginx_user is defined
+
 - name: Check the galaxy folder exists
   file:
     path: "/mnt/galaxy"
     owner: galaxy
     group: galaxy
-    mode: "0770"
+    mode: "0775"
     state: directory
+
+- name: Create galaxy folder structure
+  file:
+    path: "{{ item.strip() }}"
+    owner: pgalaxy
+    group: galaxy
+    state: directory
+    mode: 0775
+  with_items:
+    - /mnt/galaxy/galaxy
+    - /mnt/galaxy/galaxy/config
+    - /mnt/galaxy/galaxy/local_tools
+    - /mnt/galaxy/galaxy/server
+    - /mnt/galaxy/galaxy/venv
+    - /mnt/galaxy/galaxy/var
+    - /mnt/galaxy/data
