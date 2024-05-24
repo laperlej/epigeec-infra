@@ -40,8 +40,6 @@
     - role: epigeec.restart_galaxy
       become: true
       become_user: root
-    - role: epigeec.service_account
-      become: false
 
 - hosts: datasetservers
   become: true
