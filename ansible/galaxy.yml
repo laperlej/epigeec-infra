@@ -21,8 +21,9 @@
       tags:
         - always
   roles:
-    - role: galaxyproject.nginx
     - role: epigeec.volume
+    - role: laperlej.cvmfs
+    - role: galaxyproject.nginx
     - role: epigeec.setup
     - role: epigeec.postgresql
     - role: galaxyproject.postgresql
@@ -30,10 +31,8 @@
     - role: galaxyproject.postgresql_objects
       become: true
       become_user: postgres
-    #   - role: epigeec.gxadmin
-    #   - role: galaxyproject.gxadmin
-    #   - role: epigeec.backup_pg
     - role: galaxyproject.repos
+    - role: usegalaxy_eu.apptainer
     - role: galaxyproject.galaxy
     - role: galaxyproject.miniconda
       become: true

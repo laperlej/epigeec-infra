@@ -1,6 +1,6 @@
 - name: Wait for galaxy server to start
   ansible.builtin.wait_for:
-    path: /mnt/nfs/galaxy/gunicorn.sock
+    path: "{{ galaxy_root }}/gunicorn.sock"
 
 - name: Register service user
   script: "register.py -u {{ service_account.username }} -e {{ service_account.email }} -p {{ service_account.password }} -c {{ galaxy_config.galaxy.database_connection }}"
